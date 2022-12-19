@@ -21,7 +21,20 @@ export default function routes(app, addon) {
       },
     });
   });
-  app.get('/dog', addon.authenticate(), async (req, res) => {
+  app.get('/rest/api/dog', addon.checkValidToken(), async (req, res) => {
+    const response = await fetch('https://dog.ceo/api/breeds/image/random');
+    if (!response.ok) {
+      const textContent = response.text();
+      console.log(`error while getting random dog picture: ${textContent}`);
+    }
+
+    //   const title = 'Random dog';
+    const jsonContent = await response.json();
+    const imageUrl = jsonContent.message;
+    //   res.render('dog.hbs', { title, imageUrl });
+    return res.status(200).json({ imageUrl });
+  });
+  app.get('/dog', addon.checkValidToken(), async (req, res) => {
     const response = await fetch('https://dog.ceo/api/breeds/image/random');
     if (!response.ok) {
       const textContent = response.text();

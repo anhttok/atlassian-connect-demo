@@ -8,7 +8,7 @@
     "port": 3003,
     // Use views/unauthorized.hbs for error page.
     "errorTemplate": true,
-    "localBaseUrl": "https://4bfe-14-224-175-22.ap.ngrok.io",
+    "localBaseUrl": "https://53af-14-224-175-22.ap.ngrok.io",
     // atlassian-connect-express currently integrates with Sequelize for
     // persistence to store the host client information (i.e. client key,
     // host public key etc.). When no adapter is specified, it defaults to
@@ -47,9 +47,9 @@
     //   npm install --save pg
     "store": {
       "adapter": "sequelize",
-      "dialect": "sqlite3",
-      "logging": false,
-      "type": "memory"
+      "dialect": "sqlite",
+      "storage": "./developemnt.sqlite",
+      "logging": false
     }
   },
   // Configuration for production, which is enabled by setting

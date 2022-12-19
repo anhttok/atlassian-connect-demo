@@ -1,26 +1,73 @@
-var path = require('path');
+const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { ProvidePlugin } = require('webpack');
 
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: ['babel-loader'],
-      },
-      {
-        test: /\.(ts|tsx)$/,
-        exclude: /node_modules/,
-        use: ['ts-loader'],
-      },
-    ],
-  },
-  watch: process.argv.indexOf('--no-watch') > -1 ? false : true,
-  entry: {
-    'dog.page': path.resolve('./src/Dog.tsx'),
-  },
-  output: {
-    filename: 'bundled.[name].js',
-    path: path.resolve('../backend/public/dist'),
-  },
+module.exports = (env, options) => {
+    console.info(`This is the Webpack 'mode': ${options.mode}`);
+    return {
+        module: {
+            rules: [
+                {
+                    test: /\.(js|jsx)$/,
+                    exclude: /node_modules/,
+                    use: ['babel-loader'],
+                },
+                {
+                    test: /\.(ts|tsx)$/,
+                    exclude: /node_modules/,
+                    use: ['ts-loader'],
+                },
+                {
+                    test: /\.(|s)[ac]ss$/i,
+                    use: [
+                        // Creates `style` nodes from JS strings
+                        'style-loader',
+                        // Translates CSS into CommonJS
+                        // 'css-loader',
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                importLoaders: 1,
+                                modules: true,
+                                modules: {
+                                    localIdentName: '[local]', // '[name]_[local]__[hash:base64:5]',
+                                },
+                            },
+                        },
+                    ],
+                },
+                {
+                    test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+                    use: ['url-loader?limit=100000'],
+                },
+                {
+                    test: /\.json/,
+                    type: 'javascript/auto',
+                    use: [require.resolve('json-loader')],
+                },
+            ],
+        },
+        resolve: {
+            extensions: ['.tsx', '.ts', '.js'],
+            alias: {
+                process: 'process/browser',
+            },
+        },
+        devServer: { contentBase: path.join(__dirname, 'src') },
+        watch: options.mode === 'development',
+        entry: {
+          'dog.page': path.resolve('./src/Dog.tsx'),
+        },
+        plugins: [
+            new CleanWebpackPlugin(),
+            new ProvidePlugin({
+                process: 'process/browser',
+            }),
+        ],
+        output: {
+            filename: 'bundled.[name].js',
+          path: path.resolve('../backend/public/dist'),
+        },
+    };
 };
+

@@ -1,22 +1,28 @@
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { getDog } from './services/dog.services';
 
-declare let AP: any;
 const DogPage = () => {
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const a = async () => {
+    const res = await getDog();
+    setImageUrl(res.data.imageUrl || '');
+  };
   useLayoutEffect(() => {
-    AP.require('request', (request: any) => {
-      request({
-        url: '/dog',
-        success(data: any) {
-          console.log('data :>> ', data);
-        },
-      });
-    });
-  });
-  return <div>DogPagasfasfase jhjh</div>;
+    a();
+  }, []);
+  console.log('imageUrl :>> ', imageUrl);
+  return (
+    <div>
+      <img
+        src={imageUrl}
+        alt='Dog'
+      />
+    </div>
+  );
 };
 
 window.addEventListener('load', () => {
   const wrapper = document.getElementById('container');
-  ReactDOM.render(<DogPage />, wrapper);
+  return ReactDOM.render(<DogPage />, wrapper);
 });
