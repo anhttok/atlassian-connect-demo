@@ -1,0 +1,31 @@
+{
+  "key": "my-app",
+  "name": "My app",
+  "description": "My very first app",
+  "baseUrl": "{{localBaseUrl}}",
+  "authentication": {
+    "type": "jwt"
+  },
+  "lifecycle": {
+    "installed": "installed",
+    "uninstalled": "uninstalled"
+  },
+  "scopes": ["READ"],
+  "apiMigrations": {
+    "signed-install": true
+  },
+  "modules": {
+    "dynamicContentMacros": [
+      {
+        "url": "/dog",
+        "description": {
+          "value": "Pictures of dogs"
+        },
+        "name": {
+          "value": "Dog picture"
+        },
+        "key": "pictures-of-dogs"
+      }
+    ]
+  }
+}
