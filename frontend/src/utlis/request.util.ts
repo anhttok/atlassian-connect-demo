@@ -1,9 +1,10 @@
-import { AxiosRequestConfig } from 'axios';
-import { axios } from './axios.util';
+import axios, { AxiosRequestConfig } from 'axios';
+import { getJwt } from './getJwt';
+
 import { getMeta } from './getMeta';
 export type RequestParams = AxiosRequestConfig;
 const baseUrl = getMeta('ap-local-base-url') || '';
-console.log('baseUrl', baseUrl)
+const jwt = getJwt();
 export const request = async ({
   url = '',
   method = 'get',
@@ -28,11 +29,12 @@ export const request = async ({
       method,
       data,
       params: fixedParams,
+      baseURL: baseUrl,
       headers: {
-        // Accept: 'application/json',
-        // 'Content-Type': 'application/json',
+        Authorization: 'JWT ' + (jwt ?? ''),
         ...headers,
       },
+      withCredentials: true,
       ...props,
     });
     return result;

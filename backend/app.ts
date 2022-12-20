@@ -28,14 +28,16 @@ import routes from './routes';
 
 // Bootstrap Express and atlassian-connect-express
 const app = express();
-const addon = ace(app, {
-  config: {
-    descriptorTransformer: (descriptor) => {
-      // make descriptor transformations here
-      return descriptor;
-    },
-  },
-});
+const addon = ace(app,
+  // {
+  // config: {
+  //   descriptorTransformer: (descriptor: Partial<any>) => {
+  //     // make descriptor transformations here
+  //     return descriptor;
+  //   },
+  // },
+// }
+);
 // See config.json
 const port = addon.config.port();
 app.set('port', port);
@@ -69,13 +71,11 @@ app.use(compression());
 
 addon.on('host_settings_saved', function (clientKey) {
   console.log('host_settings_saved');
-  addon.settings
-    .set('appSettings', { settings1: 'settings1 value' }, clientKey)
-    .then(() => {
-      addon.settings.get('appSettings', clientKey).then((settings) => {
-        console.log(settings);
-      });
+  addon.settings.set('appSettings', clientKey).then(() => {
+    addon.settings.get('appSettings', clientKey).then((settings) => {
+      console.log(settings);
     });
+  });
 });
 // Include atlassian-connect-express middleware
 app.use(addon.middleware());
@@ -89,7 +89,7 @@ app.use(expiry(app, { dir: staticDir, debug: devEnv }));
 app.use(express.static(staticDir));
 
 // Add an hbs helper to fingerprint static resource urls
-hbs.registerHelper('furl', function (url) {
+hbs.registerHelper('furl', function (url: any) {
   return app.locals.furl(url);
 });
 // Show nicer errors in dev mode
