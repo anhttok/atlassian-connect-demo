@@ -1,5 +1,7 @@
 backend/public/dist/bundled.example.page.js
 /.idea/
 /bb-test-app.iml
-/backend/public/dist//
+/backend/public/dist/
 node_modules
+
+developemnt.sqlite
