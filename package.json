@@ -1,0 +1,32 @@
+{
+  "name": "atlassian-connect-demo",
+  "version": "1.0.0",
+  "description": "Congratulations! You've successfully created an Atlassian Connect App using the Express web application framework.",
+  "main": "index.js",
+  "scripts": {
+    "ngrok": "cd backend && npm run ngrok",
+    "install": "npm run install:backend && npm run install:frontend",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "dev": "cd backend && npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/anhttok/atlassian-connect-demo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anhttok/atlassian-connect-demo/issues"
+  },
+  "homepage": "https://github.com/anhttok/atlassian-connect-demo#readme",
+  "devDependencies": {
+    "@types/shelljs": "^0.8.11",
+    "dotenv-flow": "^3.2.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "shelljs": "^0.8.5",
+    "ts-node": "^10.9.1"
+  }
+}

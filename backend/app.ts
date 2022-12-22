@@ -1,9 +1,8 @@
-// Entry point for the app
+const { loadEnvironment } = require('./config/environment');
 
-// // Express is the underlying web framework: https://expressjs.com
+loadEnvironment();
 
 import express from 'express';
-// https://expressjs.com/en/guide/using-middleware.html
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
@@ -25,19 +24,9 @@ import path from 'path';
 // Routes live here; this is the C in MVC
 import expiry from 'static-expiry';
 import routes from './routes';
-
 // Bootstrap Express and atlassian-connect-express
 const app = express();
-const addon = ace(app,
-  // {
-  // config: {
-  //   descriptorTransformer: (descriptor: Partial<any>) => {
-  //     // make descriptor transformations here
-  //     return descriptor;
-  //   },
-  // },
-// }
-);
+const addon = ace(app);
 // See config.json
 const port = addon.config.port();
 app.set('port', port);
@@ -46,13 +35,13 @@ app.set('port', port);
 process.env.PWD = process.env.PWD || process.cwd(); // Fix expiry on Windows :(
 
 // Configure Handlebars
-const viewsDir = __dirname + '/views';
+const viewsDir = path.join(__dirname, '..', 'views');
 app.engine('hbs', hbs.express4({ partialsDir: viewsDir }));
 app.set('view engine', 'hbs');
 app.set('views', viewsDir);
 
 // Log requests, using an appropriate formatter by env
-const devEnv = app.get('env') == 'development';
+const devEnv = app.get('env') === 'development';
 app.use(morgan(devEnv ? 'dev' : 'combined'));
 
 // Include request parsers
@@ -63,11 +52,12 @@ app.use(cookieParser());
 // Gzip responses when appropriate
 app.use(compression());
 
-// // Use api.bitbucket.org instead of the deprecated bitbucket.org/api
-// app.post('/installed', (req, res, next) => {
-//   req.body.baseUrl = req.body.baseApiUrl;
-//   next();
-// });
+app.post('/installed', (req, res, next) => {
+  // TODO handle
+  console.log('installed body', req.body);
+  // res.send(200);
+  next();
+});
 
 addon.on('host_settings_saved', function (clientKey) {
   console.log('host_settings_saved');
@@ -77,10 +67,11 @@ addon.on('host_settings_saved', function (clientKey) {
     });
   });
 });
+
 // Include atlassian-connect-express middleware
 app.use(addon.middleware());
 
-const staticDir = path.join(__dirname, 'public');
+const staticDir = path.join(__dirname, '..', 'public');
 // Enable static resource fingerprinting for far future expires caching in production
 app.use(expiry(app, { dir: staticDir, debug: devEnv }));
 
@@ -92,6 +83,7 @@ app.use(express.static(staticDir));
 hbs.registerHelper('furl', function (url: any) {
   return app.locals.furl(url);
 });
+
 // Show nicer errors in dev mode
 if (devEnv) app.use(errorHandler());
 
@@ -103,6 +95,6 @@ http.createServer(app).listen(port, () => {
   console.log('App server running at ' + addon.config.localBaseUrl());
   console.log(`port: ${addon.config.port()}`);
   console.log(`localBaseUrl: ${addon.config.localBaseUrl()}`);
-  //   console.log(`restApiUrl: ${addon.config.restApiUrl()}`)
-  //   console.log(`externalApp: ${JSON.stringify(addon.config.externalApp())}`)
 });
+
+console.log('ok 5');
