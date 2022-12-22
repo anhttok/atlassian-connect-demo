@@ -6,6 +6,7 @@
     "@atlaskit/button": "^15.1.8",
     "@atlaskit/form": "^8.8.0",
     "@atlaskit/select": "^16.0.0",
+    "@atlaskit/textfield": "^5.3.2",
     "axios": "^1.2.1",
     "clean-webpack-plugin": "^4.0.0",
     "json-loader": "^0.5.7",

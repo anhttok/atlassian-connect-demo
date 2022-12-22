@@ -38,11 +38,11 @@
         ]
       },
         {
-          "url": "/multiExcerptInclude?macroId={macro.id}&pageId={page.id}&pageVersion={page.version}",
+          "url": "/multiExcerptIncludeView?macroId={macro.id}&pageId={page.id}&pageVersion={page.version}",
           "description": {
             "value": "Multi excerpt include"
           },
-          "bodyType": "plain-text",
+          "bodyType":"plain-text",
           "name": {
             "value": "Multi excerpt include"
           },

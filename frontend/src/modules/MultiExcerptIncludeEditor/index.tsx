@@ -1,18 +1,27 @@
-import Form from '@atlaskit/form';
+import Form, { ErrorMessage, Field } from '@atlaskit/form';
+import Select, { ValueType as Value } from '@atlaskit/select';
+import TextField from '@atlaskit/textfield';
 import debounce from 'lodash/debounce';
-import { useEffect, useState } from 'react';
-import FieldSearch from '../../components/FieldSearch/FieldSearch';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import FieldSearchPage from '../../components/FieldSearchPage/FieldSearchPage';
 import { Option } from '../../types/Option';
 import './styles.scss';
 type Props = {};
+type FormSubmitMacroIdPageId = {
+  excerpt: Option;
+  pageId: string;
+  page: Option;
+};
 declare let AP: any;
 const MultiExcerptIncludeEditor = (props: Props) => {
-  const [macro, setMacro] = useState<any>();
+  const [page, setPage] = useState<Option>();
   const [excerpts, setExcerpts] = useState<Option[]>([]);
+
+  const btnSubmitRef = useRef(null);
   const mapPageToOption = (pages: any[]) => {
     const options: Option[] = (pages || []).map((page) => ({
       label: page.content.title,
-      value: page.content.body.storage.value,
+      value: JSON.stringify({ id: page.content.id, body: page.content.body.storage.value }),
     }));
     return options;
   };
@@ -44,9 +53,10 @@ const MultiExcerptIncludeEditor = (props: Props) => {
         const $parameter = structuredMacro.getElementsByTagName('ac:parameter')[0];
         const attrName = $parameter.getAttribute('ac:name');
         if (attrName === 'name') {
+          const macroId = structuredMacro.getAttribute('ac:macro-id');
           const excerptOption: Option = {
             label: $parameter.textContent,
-            value: structuredMacro.outerHTML,
+            value: macroId,
           };
           excerpts.push(excerptOption);
         }
@@ -57,116 +67,66 @@ const MultiExcerptIncludeEditor = (props: Props) => {
 
   useEffect(() => {
     let cancelled = false;
-    if (!cancelled && macro) {
-      htmlStringToOptions(macro.value);
+    if (!cancelled && page) {
+      const pageBody = JSON.parse(page.value);
+      htmlStringToOptions(pageBody.body);
     }
     return () => {
       cancelled = true;
     };
-  }, [macro]);
+  }, [page]);
   useEffect(() => {
     // Store the form response
-
-    const onDialogSubmit = (event: any) => {
-      // AP.confluence.saveMacro({}, '<div>ok</div>');
-      let pageId = 5046309;
-      AP.context.getContext(function (response: any) {
-        pageId = response.pageId;
-      });
-
-      console.log('pageId :>> ', pageId);
-      const newKey = 'appkey_macro_' + new Date().getTime();
-      const jsonData = {
-        key: newKey,
-        version: {
-          number: 1,
-        },
-        value: {
-          response_value: 'ok',
-        },
-      };
-      AP.request({
-        url: '/rest/api/content/' + pageId + '/property/' + newKey,
-        type: 'PUT',
-        data: JSON.stringify(jsonData),
-        contentType: 'application/json',
-        headers: {
-          Accept: 'application/json',
-        },
-        success: function () {
-          console.log('Stored the form submission!');
-        },
-        error: function () {
-          console.log('Error storing the form submission!');
-        },
-      });
-      AP.confluence.closeMacroEditor();
+    const onDialogSubmit = () => {
+      btnSubmitRef && btnSubmitRef.current.click();
     };
     AP.dialog.disableCloseOnSubmit();
     AP.dialog.getButton('submit').bind(onDialogSubmit);
   }, []);
-  const a = AP.confluence.getMacroBody(function (bodys: any) {
-    // console.log('body', bodys);
-    const body = `<p>asfgas</p>
-<ac:image
-  ac:align="center"
-  ac:layout="center"
-  ac:original-height="354"
-  ac:original-width="1248"
-  ><ri:attachment
-    ri:filename="Screen Shot 2022-12-07 at 11.15.34.png"
-    ri:version-at-save="1" /></ac:image
-><ac:image
-  ac:align="center"
-  ac:layout="center"
-  ac:original-height="720"
-  ac:original-width="1280"
-  ><ri:attachment
-    ri:filename="big_buck_bunny_720p_1mb.mp4"
-    ri:version-at-save="1"
-/></ac:image>
-<p />
-`;
-    const convertStorageToHtml = async (contentAsStorage: string) => {
-      const convertResponse = await AP.request({
-        url: '/rest/api/contentbody/convert/styled_view?expand=webresource.superbatch.uris.css',
-        type: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'X-Atlassian-Token': 'nocheck',
-        },
-        contentType: 'application/json',
-        data: JSON.stringify({
-          value: contentAsStorage,
-          representation: 'storage',
-        }),
-      });
-      console.log('convertResponse', convertResponse);
-      return JSON.parse(convertResponse.body);
-    };
-
-    convertStorageToHtml(body).then((converted) => {
-      console.log('macroBody', converted.value);
-      console.log('superBatchUri', converted.webresource.superbatch.uris.css); // You must load this css file to style your content
-    });
+  AP.confluence.getMacroData(function (body: any) {
+    console.log('body', body);
   });
-
+  const onSubmit = useCallback((data: FormSubmitMacroIdPageId) => {
+    console.log('data', data);
+    const pageId = data.pageId;
+    const macroId = data.excerpt.value;
+    AP.confluence.saveMacro({
+      pageId,
+      macroId,
+    });
+    AP.confluence.closeMacroEditor();
+  }, []);
+  const pageId = page ? JSON.parse(page.value).id : '';
+  console.log('pageId', pageId);
   return (
     <div className={'MultiExcerptIncludeEditor'}>
       <div className="formFindExcerpts">
-        <Form
-          onSubmit={(data: any) => {
-            console.log('form data', data);
-          }}>
+        <Form onSubmit={onSubmit}>
           {({ formProps, submitting }: any) => (
-            <form {...formProps}>
-              <FieldSearch
+            <form {...formProps} className="pageMacroForm">
+              <Field name="pageId" defaultValue={pageId}>
+                {({ fieldProps }) => <TextField autoComplete="off" {...fieldProps} hidden />}
+              </Field>
+              <FieldSearchPage
                 isRequired
                 loadOptions={getSearchPageWithName}
                 name="page"
                 label="Page"
-                onChange={(value) => setMacro(value)}
+                onChange={(value) => setPage(value)}
               />
+              <Field<Value<Option>>
+                name={'excerpt'}
+                isRequired={true}
+                label={'Excerpt'}
+                validate={(value) => (value ? undefined : 'Please select excerpt')}>
+                {({ fieldProps, error }) => (
+                  <Fragment>
+                    <Select {...fieldProps} options={excerpts} placeholder={'Select excerpt'} />
+                    {error && <ErrorMessage>{error}</ErrorMessage>}
+                  </Fragment>
+                )}
+              </Field>
+              <button hidden ref={btnSubmitRef} type="submit"></button>
             </form>
           )}
         </Form>

@@ -10,10 +10,10 @@ type MultiSelectProps = {
   name: string;
   label: string;
   isRequired?: boolean;
-  onChange?:(value:Option)=>void
+  onChange?: (value: Option) => void;
 };
 
-const FieldSearch = ({
+const FieldSearchPage = ({
   loadOptions,
   name,
   isRequired = false,
@@ -22,7 +22,11 @@ const FieldSearch = ({
   onChange,
 }: MultiSelectProps) => {
   return (
-    <Field<Value<Option, false>> name={name} isRequired={isRequired} label={label}>
+    <Field<Value<Option>>
+      name={name}
+      isRequired={isRequired}
+      label={label}
+      validate={(value) => (value ? undefined : 'Please select page')}>
       {({ fieldProps, error }: any) => (
         <Fragment>
           <AsyncSelect
@@ -31,7 +35,10 @@ const FieldSearch = ({
             cacheOptions
             defaultOptions
             loadOptions={loadOptions}
-            onChange={onChange}
+            onChange={(value: Option) => {
+              onChange(value);
+              fieldProps.onChange(value);
+            }}
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </Fragment>
@@ -40,4 +47,4 @@ const FieldSearch = ({
   );
 };
 
-export default FieldSearch;
+export default FieldSearchPage;

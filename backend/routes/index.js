@@ -30,45 +30,102 @@ export default function routes(app, addon) {
       });
     }
   );
-  app.get('/multiExcerptInclude', addon.authenticate(), function (req, res) {
-    // res.render('multi-excerpt-include', { title, pageId });
-    const pageId = req.query['pageId'],
-      pageVersion = req.query['pageVersion'],
-      macroId = req.query['macroId'];
+  const getParameter = async ({
+    clientKey,
+    pageId,
+    pageVersion,
+    macroId,
+    callback,
+  }) => {
+    const httpClient = addon.httpClient({
+      clientKey: clientKey,
+    });
 
-    // Get the clientKey and use it to create an HTTP client for the REST API call
-    const clientKey = req.context.clientKey;
+    await httpClient.get(
+      `/rest/api/content/${pageId}/history/${pageVersion}/macro/id/${macroId}`,
+      function (err, response, contents) {
+        if (err || response.statusCode < 200 || response.statusCode > 299) {
+          console.log(err);
+        }
+        const macro = JSON.parse(contents);
+        if (!macro || !macro.parameters) {
+          callback(null);
+        } else {
+          callback(macro.parameters);
+        }
+      }
+    );
+  };
+  const getPageHistory = async ({ clientKey, pageId, callback }) => {
+    const httpClient = addon.httpClient({
+      clientKey: clientKey,
+    });
+    await httpClient.get(
+      `/rest/api/content/${pageId}`,
+      function (err, response, contents) {
+        if (err || response.statusCode < 200 || response.statusCode > 299) {
+          console.log(err);
+        }
+        const pageContent = JSON.parse(contents);
+        const historyId = pageContent.version.number;
+        callback(historyId);
+      }
+    );
+  };
+  const getExcerptContent = async ({
+    clientKey,
+    pageId,
+    historyId,
+    macroId,
+    res,
+  }) => {
     const httpClient = addon.httpClient({
       clientKey: clientKey,
     });
     httpClient.get(
-      '/rest/api/content/' + pageId + '/property',
+      `/rest/api/content/${pageId}/history/${historyId}/macro/id/${macroId}/convert/view`,
       function (err, response, contents) {
         if (err || response.statusCode < 200 || response.statusCode > 299) {
           console.log(err);
-          // res.render(
-          //   '<strong>An error has occurred : ' +
-          //     response.statusCode +
-          //     '</strong>'
-          // );
         }
         const macro = JSON.parse(contents);
-        const data = [];
-        var searchVal = 'appkey_macro_';
-        for (var i = 0; i < macro.results.length; i++) {
-          if (macro.results[i]['key'].startsWith(searchVal)) {
-            var a = macro.results[i].value.response_value;
-            data.push(a);
-          }
-        }
-
-        console.log('contents :>> ', data);
-        res.render('multi-excerpt-include', {
-          body: data.join(' \n'),
-        });
+        res.render('multi-excerpt-include-view', { body: macro.value || '' });
       }
     );
-  });
+  };
+  app.get(
+    '/multiExcerptIncludeView',
+    addon.authenticate(),
+    async function (req, res) {
+      const pageId = req.query['pageId'],
+        pageVersion = req.query['pageVersion'],
+        macroId = req.query['macroId'];
+      const clientKey = req.context.clientKey;
+      const callback = (parameters) => {
+        if (!parameters) {
+          res.render('multi-excerpt-include-view', {
+            body: '',
+          });
+          return;
+        }
+        const callbackHistory = (historyId) => {
+          getExcerptContent({
+            clientKey,
+            pageId: parameters.pageId.value,
+            macroId: parameters.macroId.value,
+            historyId,
+            res,
+          });
+        };
+        getPageHistory({
+          clientKey,
+          pageId: parameters.pageId.value,
+          callback: callbackHistory,
+        });
+      };
+      await getParameter({ clientKey, pageId, pageVersion, macroId, callback });
+    }
+  );
   app.get('/multiExcerpt', addon.authenticate(), function (req, res) {
     // Get the macro variables passed in via the URL
     const pageId = req.query['pageId'],
