@@ -6,7 +6,6 @@ let jwt = getJwt();
 if (!jwt) {
   console.error('JWT token not found');
 }
-console.log('jwt', jwt);
 const axios: AxiosInstance = baseAxios.create({
   baseURL: APP_BACKEND_URL,
   headers: {

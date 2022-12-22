@@ -3,7 +3,7 @@ import { axios } from './axios.util';
 import { getMeta } from './getMeta';
 export type RequestParams = AxiosRequestConfig;
 const baseUrl = getMeta('ap-local-base-url') || '';
-console.log('baseUrl', baseUrl)
+
 export const request = async ({
   url = '',
   method = 'get',
@@ -20,11 +20,14 @@ export const request = async ({
   }, {} as any);
   // eslint-disable-next-line no-useless-catch
   if (!url.startsWith('https://')) {
-    url = `/rest/api${url}`;
+    url = `${baseUrl}/rest/api${url}`;
+  }
+  else {
+    url = `${url}`;
   }
   try {
     const result = await axios({
-      url: `${baseUrl}${url}`,
+      url,
       method,
       data,
       params: fixedParams,
