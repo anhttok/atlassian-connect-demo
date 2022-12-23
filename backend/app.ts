@@ -2,7 +2,13 @@ const { loadEnvironment } = require('./config/environment');
 
 loadEnvironment();
 
+// Entry point for the app
+
+// Express is the underlying that atlassian-connect-express uses:
+// https://expressjs.com
 import express from 'express';
+
+// https://expressjs.com/en/guide/using-middleware.html
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
@@ -20,29 +26,54 @@ import hbs from 'express-hbs';
 // We also need a few stock Node modules
 import http from 'http';
 import path from 'path';
+import os from 'os';
+import helmet from 'helmet';
+import nocache from 'nocache';
 
 // Routes live here; this is the C in MVC
-import expiry from 'static-expiry';
 import routes from './routes';
+import { addServerSideRendering } from './server-side-rendering';
+
 // Bootstrap Express and atlassian-connect-express
 const app = express();
 const addon = ace(app);
+
 // See config.json
 const port = addon.config.port();
 app.set('port', port);
 
-// Static expiry middleware to help serve static resources efficiently
-process.env.PWD = process.env.PWD || process.cwd(); // Fix expiry on Windows :(
-
-// Configure Handlebars
-const viewsDir = path.join(__dirname, '..', 'views');
-app.engine('hbs', hbs.express4({ partialsDir: viewsDir }));
-app.set('view engine', 'hbs');
-app.set('views', viewsDir);
-
 // Log requests, using an appropriate formatter by env
 const devEnv = app.get('env') === 'development';
 app.use(morgan(devEnv ? 'dev' : 'combined'));
+
+// We don't want to log JWT tokens, for security reasons
+morgan.token('url', redactJwtTokens);
+
+// Configure Handlebars
+// TODO change
+const viewsDir = path.join(__dirname, '..', 'views');
+const handlebarsEngine = hbs.express4({ partialsDir: viewsDir });
+app.engine('hbs', handlebarsEngine);
+app.set('view engine', 'hbs');
+app.set('views', viewsDir);
+
+// Configure jsx (jsx files should go in views/ and export the root component as the default export)
+addServerSideRendering(app, handlebarsEngine);
+
+// Atlassian security policy requirements
+// http://go.atlassian.com/security-requirements-for-cloud-apps
+// HSTS must be enabled with a minimum age of at least one year
+app.use(
+  helmet.hsts({
+    maxAge: 31536000,
+    includeSubDomains: false,
+  }),
+);
+app.use(
+  helmet.referrerPolicy({
+    policy: ['origin'],
+  }),
+);
 
 // Include request parsers
 app.use(bodyParser.json());
@@ -52,37 +83,17 @@ app.use(cookieParser());
 // Gzip responses when appropriate
 app.use(compression());
 
-app.post('/installed', (req, res, next) => {
-  // TODO handle
-  console.log('installed body', req.body);
-  // res.send(200);
-  next();
-});
-
-addon.on('host_settings_saved', function (clientKey) {
-  console.log('host_settings_saved');
-  addon.settings.set('appSettings', clientKey).then(() => {
-    addon.settings.get('appSettings', clientKey).then((settings) => {
-      console.log(settings);
-    });
-  });
-});
-
 // Include atlassian-connect-express middleware
 app.use(addon.middleware());
 
-const staticDir = path.join(__dirname, '..', 'public');
-// Enable static resource fingerprinting for far future expires caching in production
-app.use(expiry(app, { dir: staticDir, debug: devEnv }));
-
 // Mount the static files directory
-// Anything in ./public is served up as static content
+// TODO
+const staticDir = path.join(__dirname, '..', 'public');
 app.use(express.static(staticDir));
 
-// Add an hbs helper to fingerprint static resource urls
-hbs.registerHelper('furl', function (url: any) {
-  return app.locals.furl(url);
-});
+// Atlassian security policy requirements
+// http://go.atlassian.com/security-requirements-for-cloud-apps
+app.use(nocache());
 
 // Show nicer errors in dev mode
 if (devEnv) app.use(errorHandler());
@@ -93,8 +104,20 @@ routes(app, addon);
 // Boot the HTTP server
 http.createServer(app).listen(port, () => {
   console.log('App server running at ' + addon.config.localBaseUrl());
-  console.log(`port: ${addon.config.port()}`);
-  console.log(`localBaseUrl: ${addon.config.localBaseUrl()}`);
+  console.log(`Port: ${addon.config.port()}`);
+  // TODO check
+  // Enables auto registration/de-registration of app into a host in dev mode
+  // if (devEnv) addon.register();
 });
 
-console.log('ok 5');
+function redactJwtTokens(req: any) {
+  const url = req.originalUrl || req.url || '';
+  const params = new URLSearchParams(url);
+  let redacted = url;
+  params.forEach((value, key) => {
+    if (key.toLowerCase() === 'jwt') {
+      redacted = redacted.replace(value, 'redacted');
+    }
+  });
+  return redacted;
+}

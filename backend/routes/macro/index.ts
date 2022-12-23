@@ -1,8 +1,10 @@
 // TODO remove
 // @ts-nocheck
+
 import { AddOn } from 'atlassian-connect-express';
 import { Request, Response } from 'express';
 import { Express } from 'express-serve-static-core';
+import fetch from 'node-fetch';
 
 export default function macroRouters(app: Express, addon: AddOn) {
   app.get('/macro/dog-picture', addon.checkValidToken(), async (req: Request, res: Response) => {
