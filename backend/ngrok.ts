@@ -3,10 +3,10 @@ import ngrok from 'ngrok';
 import fs from 'fs';
 
 const PORT = 3003;
-(async function () {
+const main = async () => {
   const localEnvLines = fs.readFileSync('./.env.local', 'utf8').split(/\r?\n/);
   let currentBaseUrl;
-  let indexBaseUrlIndex = localEnvLines.findIndex((item) => item.startsWith('BASE_URL='));
+  const indexBaseUrlIndex = localEnvLines.findIndex((item) => item.startsWith('BASE_URL='));
   let isBaseUrlError = false;
   if (indexBaseUrlIndex !== -1) {
     currentBaseUrl = localEnvLines[indexBaseUrlIndex].replace('BASE_URL=', '');
@@ -30,4 +30,6 @@ const PORT = 3003;
   newLocalConfig.push(newBaseUrlConfig);
   console.info('Base url:', url);
   fs.writeFileSync('.env.local', newLocalConfig.join('\n'), 'utf8');
-})();
+};
+
+main();

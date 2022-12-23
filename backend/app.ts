@@ -1,4 +1,4 @@
-const { loadEnvironment } = require('./config/environment');
+import { loadEnvironment } from './config/environment';
 
 loadEnvironment();
 
@@ -103,8 +103,8 @@ routes(app, addon);
 
 // Boot the HTTP server
 http.createServer(app).listen(port, () => {
-  console.log('App server running at ' + addon.config.localBaseUrl());
-  console.log(`Port: ${addon.config.port()}`);
+  console.info('App server running at ' + addon.config.localBaseUrl());
+  console.info(`Port: ${addon.config.port()}`);
   // TODO check
   // Enables auto registration/de-registration of app into a host in dev mode
   // if (devEnv) addon.register();

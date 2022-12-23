@@ -9,7 +9,7 @@
     "ngrok": "ts-node ngrok",
     "clean": "rimraf dist/*",
     "copy-assets": "ts-node tools/copyAssets",
-    "lint": "",
+    "lint": "tslint -c tslint.json -p tsconfig.json",
     "tsc": "tsc",
     "build": "npm-run-all clean lint tsc copy-assets",
     "prestart": "npm run build"
