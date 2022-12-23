@@ -46,12 +46,13 @@ app.set('port', port);
 const devEnv = app.get('env') === 'development';
 app.use(morgan(devEnv ? 'dev' : 'combined'));
 
+const accessDir = devEnv ? path.join(__dirname, '..') : __dirname;
+
 // We don't want to log JWT tokens, for security reasons
 morgan.token('url', redactJwtTokens);
 
 // Configure Handlebars
-// TODO change
-const viewsDir = path.join(__dirname, '..', 'views');
+const viewsDir = path.join(accessDir, 'views');
 const handlebarsEngine = hbs.express4({ partialsDir: viewsDir });
 app.engine('hbs', handlebarsEngine);
 app.set('view engine', 'hbs');
@@ -87,8 +88,7 @@ app.use(compression());
 app.use(addon.middleware());
 
 // Mount the static files directory
-// TODO
-const staticDir = path.join(__dirname, '..', 'public');
+const staticDir = path.join(accessDir, 'public');
 app.use(express.static(staticDir));
 
 // Atlassian security policy requirements
