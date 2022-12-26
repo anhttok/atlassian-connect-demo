@@ -1,5 +1,3 @@
-// TODO remove
-// @ts-nocheck
 import { AddOn } from 'atlassian-connect-express';
 import cors from 'cors';
 import { Request, Response } from 'express';
@@ -28,6 +26,8 @@ export default function routes(app: Express, addon: AddOn) {
       },
     });
   });
+
+
 
   app.post('/uninstalled', addon.authenticate(), function (req: Request, res: Response) {
     addon.settings.del('appSettings', req.context.clientKey).then(() => res.send(200));

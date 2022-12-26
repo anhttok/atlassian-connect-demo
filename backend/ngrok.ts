@@ -1,10 +1,14 @@
-import fetch from 'node-fetch';
-import ngrok from 'ngrok';
 import fs from 'fs';
+import ngrok from 'ngrok';
+import fetch from 'node-fetch';
 
 const PORT = 3003;
 const main = async () => {
-  const localEnvLines = fs.readFileSync('./.env.local', 'utf8').split(/\r?\n/);
+  let localEnvLines: string[] = [];
+  try {
+    localEnvLines = fs.readFileSync('./.env.local', 'utf8').split(/\r?\n/);
+  } catch (error) {}
+
   let currentBaseUrl;
   const indexBaseUrlIndex = localEnvLines.findIndex((item) => item.startsWith('BASE_URL='));
   let isBaseUrlError = false;
@@ -24,7 +28,10 @@ const main = async () => {
   if (indexBaseUrlIndex !== -1 && !isBaseUrlError) {
     return;
   }
-  const url = await ngrok.connect(PORT);
+  const url = await ngrok.connect({
+    authtoken: '2JRReyTosPqDzkjJemnvjQGvVnf_2yDmoWx28MQN1CMBTxtnX',
+    addr: PORT,
+  });
   const newBaseUrlConfig = `BASE_URL=${url}`;
   const newLocalConfig = localEnvLines.filter((item) => !item.startsWith('BASE_URL='));
   newLocalConfig.push(newBaseUrlConfig);
