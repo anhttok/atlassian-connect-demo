@@ -10,6 +10,7 @@ type MultiSelectProps = {
   name: string;
   label: string;
   isRequired?: boolean;
+  defaultValue?: Option;
   onChange?: (value: Option) => void;
 };
 
@@ -18,7 +19,7 @@ const FieldSearchPage = ({
   name,
   isRequired = false,
   placeholder,
-  label,
+  label,defaultValue,
   onChange,
 }: MultiSelectProps) => {
   return (
@@ -26,6 +27,7 @@ const FieldSearchPage = ({
       name={name}
       isRequired={isRequired}
       label={label}
+      defaultValue={defaultValue}
       validate={(value) => (value ? undefined : 'Please select page')}>
       {({ fieldProps, error }: any) => (
         <Fragment>
