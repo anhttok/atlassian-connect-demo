@@ -1,5 +1,4 @@
-import {  HostClient } from 'atlassian-connect-express';
-import { Request } from 'express';
+import { HostClient } from 'atlassian-connect-express';
 
 declare global {
   namespace Express {
@@ -8,3 +7,7 @@ declare global {
     }
   }
 }
+export type MacroParameters = {
+  pageId: { value: string };
+  macroId: { value: string };
+};

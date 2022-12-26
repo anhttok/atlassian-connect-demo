@@ -103,7 +103,7 @@ routes(app, addon);
 
 // Boot the HTTP server
 http.createServer(app).listen(port, () => {
-  console.info('App server running at ' + addon.config.localBaseUrl());
+  console.info('App server running at: ' + addon.config.localBaseUrl());
   console.info(`Port: ${addon.config.port()}`);
   // TODO check
   // Enables auto registration/de-registration of app into a host in dev mode

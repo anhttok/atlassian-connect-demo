@@ -1,6 +1,4 @@
 {
-  // "development" is the default environment.
-  // To change, set NODE_ENV (http://expressjs.com/api.html#app.configure).
   "development": {
     "port": "$PORT",
     "errorTemplate": true,
@@ -12,24 +10,14 @@
       "logging": false
     }
   },
-  // Configuration for production, which is enabled by setting
-  // the NODE_ENV=production environment variable.
   "production": {
-    // PaaS like Heroku will provide HTTP port via environement variable.
     "port": "$PORT",
-    // Use views/unauthorized.hbs for error page.
     "errorTemplate": true,
-    // Public URL to production app.
     "localBaseUrl": "https://9053-14-224-175-22.ap.ngrok.io/",
     "store": {
-      // Don't use memory storage for production, otherwise
-      // data in the storage will go away when the app server restarts.
-      // Here, we use PostgreSQL:
       "type": "postgres",
-      // PaaS like Heroku will provide DB connection URL through environment variable.
       "url": "$DATABASE_URL"
     },
-    // The app can only be registered by the products on these domains:
     "whitelist": ["*.jira-dev.com", "*.atlassian.net", "*.atlassian.com", "*.jira.com"]
   },
   "product": "confluence"

@@ -1,7 +1,7 @@
 {
-  "key": "anhtt-my-app",
-  "name": "anhtt-My app",
-  "description": "My very first app",
+  "key": "demo-drag-drop-macro",
+  "name": "Demo drag and drop macro",
+  "description": "This is a demo macro",
   "baseUrl": "{{localBaseUrl}}",
   "authentication": {
     "type": "jwt"
@@ -9,21 +9,53 @@
   "lifecycle": {
     "installed": "/installed"
   },
-  "scopes": ["READ"],
+  "scopes": ["READ", "WRITE"],
   "apiMigrations": {
     "signed-install": true
   },
   "modules": {
-    "dynamicContentMacros": [
+    "staticContentMacros": [
       {
-        "url": "/macro/dog-picture",
+        "url": "/macro/multiExcerpt?macroId={macro.id}&pageId={page.id}&pageVersion={page.version}",
         "description": {
-          "value": "Pictures of dogs"
+          "value": "Multi excerpt"
         },
+        "bodyType": "rich-text",
         "name": {
-          "value": "Dog picture"
+          "value": "Multi excerpt"
         },
-        "key": "pictures-of-dogs"
+        "key": "multi-excerpt-dynamic-content",
+        "parameters": [
+          {
+            "identifier": "name",
+            "name": {
+              "value": "Name"
+            },
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      {
+        "url": "/macro/multiExcerptIncludeView?macroId={macro.id}&pageId={page.id}&pageVersion={page.version}",
+        "description": {
+          "value": "Multi excerpt include"
+        },
+        "renderingMethod": "get",
+        "bodyType": "none",
+        "name": {
+          "value": "Multi excerpt include"
+        },
+        "key": "multi-excerpt-include-content",
+        "editor": {
+          "url": "/macro/multiExcerptIncludeEditor",
+          "editTitle": {
+            "value": "Edit excerpt include"
+          },
+          "insertTitle": {
+            "value": "Insert excerpt"
+          }
+        }
       }
     ]
   }

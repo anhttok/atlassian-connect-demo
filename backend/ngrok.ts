@@ -30,6 +30,7 @@ const main = async () => {
   }
   const url = await ngrok.connect({
     authtoken: '2JRReyTosPqDzkjJemnvjQGvVnf_2yDmoWx28MQN1CMBTxtnX',
+    'ngrok-skip-browser-warning':'*',
     addr: PORT,
   });
   const newBaseUrlConfig = `BASE_URL=${url}`;
