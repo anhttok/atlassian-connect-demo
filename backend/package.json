@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build:dev": "tsc --watch ``--preserveWatchOutput",
+    "build:dev": "tsc --watch --preserveWatchOutput",
     "start:dev": "nodemon dist/app.js",
     "dev": "npm-run-all -p build:dev start:dev",
     "ngrok": "ts-node ngrok",
