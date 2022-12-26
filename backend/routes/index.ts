@@ -27,8 +27,6 @@ export default function routes(app: Express, addon: AddOn) {
     });
   });
 
-
-
   app.post('/uninstalled', addon.authenticate(), function (req: Request, res: Response) {
     addon.settings.del('appSettings', req.context.clientKey).then(() => res.send(200));
   });
